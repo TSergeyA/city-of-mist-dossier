@@ -18,3 +18,4 @@
 Гибкое управление ключами Силы и Слабости.
 
 [Открыть интерактивный лист персонажа](https://tsergeya.github.io/city-of-mist-dossier/)
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/c384390c-3867-471a-bd74-f1b69aed4e33" />

@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Город Тумана — Досье эйдоса</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0f1e;
+      font-family: 'Segoe UI', 'Orbitron', 'Courier New', monospace;
+      padding: 2rem 1.5rem;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    /* неоновые темы */
+    body.neon-pink { background: #0b0710; color: #ffb7fa; text-shadow: 0 0 2px #ff4dda; }
+    body.neon-cyan { background: #05161f; color: #9effff; text-shadow: 0 0 2px #0affff; }
+    body.neon-green { background: #0a1f0a; color: #b3ffa7; text-shadow: 0 0 2px #5eff00; }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* Правая верхняя полоска-переключатель */
+    .color-strip {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+      border: 1px solid currentColor;
+      transition: 0.2s;
+      z-index: 200;
+    }
+    .color-strip:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 12px currentColor;
+    }
+    .color-strip-inner {
+      width: 24px;
+      height: 24px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #ff44cc, #0affff, #5eff00);
+    }
+    .color-menu {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      background: rgba(10,15,30,0.95);
+      backdrop-filter: blur(8px);
+      border-radius: 1rem;
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      border: 1px solid currentColor;
+      z-index: 200;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    }
+    .color-menu button {
+      background: none;
+      border: none;
+      color: inherit;
+      padding: 0.3rem 1rem;
+      border-radius: 2rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: 0.1s;
+    }
+    .color-menu button:hover {
+      background: currentColor;
+      color: #000;
+    }
+    .hidden {
+      display: none;
+    }
+
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid currentColor;
+      padding-bottom: 1rem;
+    }
+    h1 {
+      font-size: 2.4rem;
+      letter-spacing: 3px;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, currentColor, #ffffffc0);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: none;
+    }
+    .sub {
+      font-size: 0.85rem;
+      opacity: 0.7;
+      margin-top: 0.2rem;
+    }
+    .controls {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    button, .file-label {
+      background: rgba(20, 30, 45, 0.7);
+      border: 1px solid currentColor;
+      padding: 0.4rem 1rem;
+      font-family: inherit;
+      font-weight: bold;
+      font-size: 0.9rem;
+      border-radius: 2rem;
+      cursor: pointer;
+      transition: 0.2s;
+      color: inherit;
+      backdrop-filter: blur(4px);
+      display: inline-block;
+      text-align: center;
+    }
+    button:hover, .file-label:hover {
+      background: currentColor;
+      color: #0a0f1e;
+      box-shadow: 0 0 8px currentColor;
+    }
+    input[type="file"] {
+      display: none;
+    }
+
+    /* сетка карточек */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 1.8rem;
+      margin-top: 1rem;
+    }
+
+    /* карты */
+    .card {
+      background: rgba(12, 18, 28, 0.75);
+      backdrop-filter: blur(4px);
+      border-radius: 1.5rem;
+      padding: 1.2rem;
+      transition: 0.2s;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      border-left: 6px solid;
+      border-top: 1px solid rgba(255,255,255,0.2);
+      border-right: 1px solid rgba(255,255,255,0.2);
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    .card.logos { border-left-color: #2ecc71; background: rgba(30, 70, 40, 0.4); }
+    .card.mythos { border-left-color: #9b59b6; background: rgba(70, 40, 90, 0.4); }
+    .card.relic { border-left-color: #e67e22; background: rgba(80, 50, 30, 0.4); }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px dashed currentColor;
+      padding-bottom: 0.5rem;
+    }
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: bold;
+      background: none;
+      border: none;
+      color: inherit;
+      font-family: inherit;
+      flex: 2;
+      min-width: 140px;
+      padding: 0.2rem;
+    }
+    .card-title:focus { outline: none; border-bottom: 1px solid; }
+    .type-select {
+      background: rgba(0,0,0,0.5);
+      color: inherit;
+      border: 1px solid currentColor;
+      border-radius: 2rem;
+      padding: 0.2rem 0.6rem;
+      font-family: inherit;
+      font-size: 0.7rem;
+      cursor: pointer;
+    }
+    .color-indicator {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.5);
+    }
+    .delete-card {
+      background: none;
+      border: none;
+      color: inherit;
+      font-size: 1.4rem;
+      cursor: pointer;
+      opacity: 0.7;
+    }
+    .delete-card:hover { opacity: 1; text-shadow: 0 0 6px red; }
+
+    .mystery-identity {
+      margin: 0.8rem 0;
+      background: rgba(0,0,0,0.3);
+      border-radius: 1rem;
+      padding: 0.5rem;
+    }
+    .mi-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.2rem;
+    }
+    .mi-input {
+      width: 100%;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid currentColor;
+      border-radius: 1rem;
+      padding: 0.4rem 0.6rem;
+      color: inherit;
+      font-family: inherit;
+      font-size: 0.85rem;
+    }
+
+    .scales {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.8rem;
+      justify-content: space-between;
+    }
+    .scale {
+      flex: 1;
+      background: rgba(0,0,0,0.3);
+      border-radius: 1rem;
+      padding: 0.4rem;
+      text-align: center;
+    }
+    .scale-title {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+    .scale-dots {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid currentColor;
+      cursor: pointer;
+    }
+    .dot.filled {
+      background: currentColor;
+      box-shadow: 0 0 6px currentColor;
+    }
+
+    .keys-section { margin: 1rem 0 0.8rem; }
+    .keys-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: bold;
+      margin: 0.5rem 0 0.3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .key-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    .key-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0.4rem 0;
+      background: rgba(0,0,0,0.3);
+      padding: 0.3rem 0.6rem;
+      border-radius: 1rem;
+      flex-wrap: wrap;
+    }
+    .key-text {
+      flex: 3;
+      background: transparent;
+      border: none;
+      color: inherit;
+      font-family: monospace;
+      font-size: 0.85rem;
+      padding: 0.2rem;
+    }
+    .key-text:focus { outline: none; border-bottom: 1px solid; }
+    .key-note-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid currentColor;
+      border-radius: 1rem;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.65rem;
+      cursor: pointer;
+    }
+    .key-note-btn:hover {
+      background: currentColor;
+      color: #0a0f1e;
+    }
+    .delete-key {
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      font-size: 1.1rem;
+      opacity: 0.6;
+    }
+    .delete-key:hover { opacity: 1; color: #ff8888; }
+    .add-key-btn {
+      background: transparent;
+      border: 1px dashed currentColor;
+      border-radius: 2rem;
+      padding: 0.2rem 0.8rem;
+      font-size: 0.7rem;
+      margin-top: 0.3rem;
+      cursor: pointer;
+    }
+
+    .add-card-btn {
+      margin-top: 2rem;
+      display: block;
+      width: 260px;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid;
+    }
+
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .signature {
+      font-size: 1rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      color: #ffcc00;
+      text-shadow: 0 0 6px #ffaa00, 0 0 12px #ff8800;
+      background: none;
+      border: none;
+      font-family: inherit;
+      cursor: default;
+    }
+    .reset-btn {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid currentColor;
+      border-radius: 2rem;
+      padding: 0.2rem 1rem;
+      cursor: pointer;
+    }
+
+    /* Модальное окно */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.8);
+      backdrop-filter: blur(5px);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: #1e2a3a;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      width: 90%;
+      max-width: 450px;
+      box-shadow: 0 0 30px currentColor;
+      border: 1px solid currentColor;
+      color: #fff;
+    }
+    body.neon-pink .modal-content { background: #2a1a2e; border-color: #ff44cc; }
+    body.neon-cyan .modal-content { background: #0a2a30; border-color: #0affff; }
+    body.neon-green .modal-content { background: #1a2a1a; border-color: #5eff00; }
+    .modal-content h3 { margin-bottom: 1rem; font-size: 1.4rem; }
+    .modal-content textarea {
+      width: 100%;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid currentColor;
+      border-radius: 1rem;
+      padding: 0.7rem;
+      font-family: inherit;
+      color: inherit;
+      font-size: 1rem;
+      resize: vertical;
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .modal-buttons button {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      padding: 0.4rem 1.2rem;
+      border-radius: 2rem;
+      cursor: pointer;
+    }
+    .modal-buttons button.save-btn {
+      background: currentColor;
+      color: #000;
+    }
+    @media (max-width: 700px) {
+      body { padding: 1rem; }
+      .key-item { flex-direction: column; align-items: stretch; }
+      .key-text, .key-note-btn { width: 100%; text-align: center; }
+      .color-strip { top: 12px; right: 12px; }
+    }
+  </style>
+</head>
+<body class="neon-cyan">
+<div class="container">
+  <div class="header">
+    <div>
+      <h1>ДОСЬЕ ЭЙДОСА</h1>
+      <div class="sub">Город Тумана — детективная ролевая игра</div>
+    </div>
+    <div class="controls">
+      <button id="exportBtn">💾 Сохранить</button>
+      <label for="importFile" class="file-label">📂 Загрузить</label>
+      <input type="file" id="importFile" accept=".json">
+    </div>
+  </div>
+
+  <div class="cards-grid" id="cardsGrid"></div>
+
+  <button id="addNewCardBtn" class="add-card-btn">+ ДОБАВИТЬ ТЕМУ (карту)</button>
+  <footer>
+    <button id="resetAllBtn" class="reset-btn">♻️ СБРОСИТЬ ВСЕ КАРТЫ</button>
+    <div class="signature">✨ Made by Grigen ✨</div>
+  </footer>
+</div>
+
+<!-- Полоска-переключатель цветов (правый верхний угол) -->
+<div id="colorStrip" class="color-strip">
+  <div class="color-strip-inner"></div>
+</div>
+<div id="colorMenu" class="color-menu hidden">
+  <button data-theme="neon-pink">💗 Розовый</button>
+  <button data-theme="neon-cyan">💙 Циан</button>
+  <button data-theme="neon-green">💚 Зелёный</button>
+</div>
+
+<!-- Модальное окно для заметок -->
+<div id="noteModal" class="modal">
+  <div class="modal-content">
+    <h3>📝 Редактировать заметку</h3>
+    <textarea id="modalNoteText" rows="4" placeholder="Описание ключа, комментарий..."></textarea>
+    <div class="modal-buttons">
+      <button id="modalCancelBtn">Отмена</button>
+      <button id="modalSaveBtn" class="save-btn">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- Данные ---
+  let themesData = [];
+  let currentEditContext = null;
+
+  function saveToLocal() {
+    localStorage.setItem('cityOfMist_final_dossier', JSON.stringify(themesData));
+  }
+
+  function loadFromLocal() {
+    const saved = localStorage.getItem('cityOfMist_final_dossier');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          themesData = parsed;
+          return;
+        }
+      } catch(e) {}
+    }
+    themesData = [
+      {
+        id: 'starter',
+        title: 'Пример темы',
+        typeCategory: 'mythos',
+        mysteryIdentity: 'Кто или что скрывается за моим кольцом?',
+        attention: 0,
+        decay: 0,
+        powerKeys: [{ name: 'Сила примера', note: 'Заметка к силе' }],
+        weaknessKeys: ['Слабость примера']
+      }
+    ];
+  }
+
+  function generateId() {
+    return Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+  }
+
+  function getCardClass(category) {
+    if (category === 'logos') return 'logos';
+    if (category === 'relic') return 'relic';
+    return 'mythos';
+  }
+
+  function getColorForType(category) {
+    if (category === 'logos') return '#2ecc71';
+    if (category === 'relic') return '#e67e22';
+    return '#9b59b6';
+  }
+
+  function getMiLabel(type) {
+    return type === 'logos' ? 'Идентичность (утверждение)' : 'Тайна (вопрос)';
+  }
+
+  // --- Рендер ---
+  function renderCards() {
+    const grid = document.getElementById('cardsGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    themesData.forEach(card => {
+      const cardDiv = document.createElement('div');
+      cardDiv.className = `card ${getCardClass(card.typeCategory)}`;
+      cardDiv.dataset.id = card.id;
+
+      // Шапка
+      const headerDiv = document.createElement('div');
+      headerDiv.className = 'card-header';
+      const titleInput = document.createElement('input');
+      titleInput.type = 'text';
+      titleInput.className = 'card-title';
+      titleInput.value = card.title;
+      titleInput.placeholder = 'Название темы';
+      titleInput.addEventListener('change', () => { card.title = titleInput.value; saveToLocal(); });
+
+      const typeSelect = document.createElement('select');
+      typeSelect.className = 'type-select';
+      typeSelect.innerHTML = `
+        <option value="logos">🌿 Логос</option>
+        <option value="mythos">🔮 Мифос</option>
+        <option value="relic">👑 Реликвия</option>
+      `;
+      typeSelect.value = card.typeCategory;
+      typeSelect.addEventListener('change', (e) => {
+        card.typeCategory = e.target.value;
+        cardDiv.className = `card ${getCardClass(card.typeCategory)}`;
+        colorIndicator.style.backgroundColor = getColorForType(card.typeCategory);
+        miLabelSpan.textContent = getMiLabel(card.typeCategory);
+        const decayTitle = decayScale.querySelector('.scale-title');
+        if (decayTitle) decayTitle.textContent = card.typeCategory === 'logos' ? '⚠️ НАДЛОМ' : '🌀 УГАСАНИЕ';
+        saveToLocal();
+      });
+
+      const colorIndicator = document.createElement('div');
+      colorIndicator.className = 'color-indicator';
+      colorIndicator.style.backgroundColor = getColorForType(card.typeCategory);
+
+      const delBtn = document.createElement('button');
+      delBtn.textContent = '✖';
+      delBtn.className = 'delete-card';
+      delBtn.addEventListener('click', () => {
+        if (confirm(`Удалить тему "${card.title}"?`)) {
+          themesData = themesData.filter(c => c.id !== card.id);
+          renderCards();
+          saveToLocal();
+        }
+      });
+      headerDiv.appendChild(titleInput);
+      headerDiv.appendChild(typeSelect);
+      headerDiv.appendChild(colorIndicator);
+      headerDiv.appendChild(delBtn);
+
+      // Тайна/идентичность
+      const miDiv = document.createElement('div');
+      miDiv.className = 'mystery-identity';
+      const miLabelSpan = document.createElement('div');
+      miLabelSpan.className = 'mi-label';
+      miLabelSpan.textContent = getMiLabel(card.typeCategory);
+      const miInput = document.createElement('input');
+      miInput.type = 'text';
+      miInput.className = 'mi-input';
+      miInput.value = card.mysteryIdentity || '';
+      miInput.placeholder = card.typeCategory === 'logos' ? 'Напр.: «Я не позволю правде ускользнуть»' : 'Напр.: «Кто стоит за моим пробуждением?»';
+      miInput.addEventListener('change', () => { card.mysteryIdentity = miInput.value; saveToLocal(); });
+      miDiv.appendChild(miLabelSpan);
+      miDiv.appendChild(miInput);
+
+      // Шкалы
+      const scalesDiv = document.createElement('div');
+      scalesDiv.className = 'scales';
+      const attentionScale = document.createElement('div');
+      attentionScale.className = 'scale';
+      attentionScale.innerHTML = `<div class="scale-title">🔆 ВНИМАНИЕ</div><div class="scale-dots" data-type="attention" data-card-id="${card.id}"></div>`;
+      const decayScale = document.createElement('div');
+      decayScale.className = 'scale';
+      decayScale.innerHTML = `<div class="scale-title">${card.typeCategory === 'logos' ? '⚠️ НАДЛОМ' : '🌀 УГАСАНИЕ'}</div><div class="scale-dots" data-type="decay" data-card-id="${card.id}"></div>`;
+      scalesDiv.appendChild(attentionScale);
+      scalesDiv.appendChild(decayScale);
+
+      // Ключи силы
+      const powerSection = document.createElement('div');
+      powerSection.className = 'keys-section';
+      const powerTitle = document.createElement('div');
+      powerTitle.className = 'keys-title';
+      powerTitle.innerHTML = `<span>⚡ КЛЮЧИ СИЛЫ (${card.powerKeys.length})</span> <span style="font-size:0.7rem;">➕ усиливают ходы</span>`;
+      const powerList = document.createElement('ul');
+      powerList.className = 'key-list';
+
+      function rebuildPowerList() {
+        powerList.innerHTML = '';
+        card.powerKeys.forEach((keyObj, idx) => {
+          const li = document.createElement('li');
+          li.className = 'key-item';
+          const nameInput = document.createElement('input');
+          nameInput.type = 'text';
+          nameInput.value = keyObj.name;
+          nameInput.placeholder = 'Название ключа';
+          nameInput.className = 'key-text';
+          nameInput.addEventListener('change', () => {
+            card.powerKeys[idx].name = nameInput.value;
+            saveToLocal();
+          });
+          const noteBtn = document.createElement('button');
+          noteBtn.textContent = `📝 ${keyObj.note ? 'есть заметка' : 'добавить заметку'}`;
+          noteBtn.className = 'key-note-btn';
+          noteBtn.title = keyObj.note || 'нет заметки';
+          noteBtn.addEventListener('click', () => {
+            currentEditContext = { cardId: card.id, keyIndex: idx };
+            document.getElementById('modalNoteText').value = card.powerKeys[idx].note || '';
+            document.getElementById('noteModal').style.display = 'flex';
+          });
+          const delKey = document.createElement('button');
+          delKey.textContent = '✖';
+          delKey.className = 'delete-key';
+          delKey.addEventListener('click', () => {
+            card.powerKeys.splice(idx, 1);
+            rebuildPowerList();
+            powerTitle.innerHTML = `<span>⚡ КЛЮЧИ СИЛЫ (${card.powerKeys.length})</span> <span style="font-size:0.7rem;">➕ усиливают ходы</span>`;
+            saveToLocal();
+          });
+          li.appendChild(nameInput);
+          li.appendChild(noteBtn);
+          li.appendChild(delKey);
+          powerList.appendChild(li);
+        });
+        powerTitle.innerHTML = `<span>⚡ КЛЮЧИ СИЛЫ (${card.powerKeys.length})</span> <span style="font-size:0.7rem;">➕ усиливают ходы</span>`;
+      }
+      rebuildPowerList();
+
+      const addPowerBtn = document.createElement('button');
+      addPowerBtn.textContent = '+ добавить ключ силы';
+      addPowerBtn.className = 'add-key-btn';
+      addPowerBtn.addEventListener('click', () => {
+        card.powerKeys.push({ name: 'Новая сила', note: '' });
+        rebuildPowerList();
+        saveToLocal();
+      });
+      powerSection.appendChild(powerTitle);
+      powerSection.appendChild(powerList);
+      powerSection.appendChild(addPowerBtn);
+
+      // Ключи слабости
+      const weakSection = document.createElement('div');
+      weakSection.className = 'keys-section';
+      const weakTitle = document.createElement('div');
+      weakTitle.className = 'keys-title';
+      weakTitle.innerHTML = `<span>⚠️ КЛЮЧИ СЛАБОСТИ (${card.weaknessKeys.length})</span> <span style="font-size:0.7rem;">➖ мешают, дают Внимание</span>`;
+      const weakList = document.createElement('ul');
+      weakList.className = 'key-list';
+
+      function rebuildWeakList() {
+        weakList.innerHTML = '';
+        card.weaknessKeys.forEach((weak, idx) => {
+          const li = document.createElement('li');
+          li.className = 'key-item';
+          const weakInput = document.createElement('input');
+          weakInput.type = 'text';
+          weakInput.value = weak;
+          weakInput.placeholder = 'Ключ слабости';
+          weakInput.className = 'key-text';
+          weakInput.addEventListener('change', () => {
+            card.weaknessKeys[idx] = weakInput.value;
+            saveToLocal();
+          });
+          const delWeak = document.createElement('button');
+          delWeak.textContent = '✖';
+          delWeak.className = 'delete-key';
+          delWeak.addEventListener('click', () => {
+            card.weaknessKeys.splice(idx, 1);
+            rebuildWeakList();
+            weakTitle.innerHTML = `<span>⚠️ КЛЮЧИ СЛАБОСТИ (${card.weaknessKeys.length})</span> <span style="font-size:0.7rem;">➖ мешают, дают Внимание</span>`;
+            saveToLocal();
+          });
+          li.appendChild(weakInput);
+          li.appendChild(delWeak);
+          weakList.appendChild(li);
+        });
+        weakTitle.innerHTML = `<span>⚠️ КЛЮЧИ СЛАБОСТИ (${card.weaknessKeys.length})</span> <span style="font-size:0.7rem;">➖ мешают, дают Внимание</span>`;
+      }
+      rebuildWeakList();
+
+      const addWeakBtn = document.createElement('button');
+      addWeakBtn.textContent = '+ добавить ключ слабости';
+      addWeakBtn.className = 'add-key-btn';
+      addWeakBtn.addEventListener('click', () => {
+        card.weaknessKeys.push('Новая слабость');
+        rebuildWeakList();
+        saveToLocal();
+      });
+      weakSection.appendChild(weakTitle);
+      weakSection.appendChild(weakList);
+      weakSection.appendChild(addWeakBtn);
+
+      cardDiv.appendChild(headerDiv);
+      cardDiv.appendChild(miDiv);
+      cardDiv.appendChild(scalesDiv);
+      cardDiv.appendChild(powerSection);
+      cardDiv.appendChild(weakSection);
+      grid.appendChild(cardDiv);
+
+      // отрисовать точки шкал
+      const attentionDots = cardDiv.querySelector('.scale-dots[data-type="attention"]');
+      const decayDots = cardDiv.querySelector('.scale-dots[data-type="decay"]');
+      function renderDots(container, value, max=3) {
+        container.innerHTML = '';
+        for (let i = 0; i < max; i++) {
+          const dot = document.createElement('div');
+          dot.className = `dot ${i < value ? 'filled' : ''}`;
+          dot.addEventListener('click', () => {
+            const newVal = i < value ? i : i+1;
+            if (container.dataset.type === 'attention') card.attention = newVal;
+            else card.decay = newVal;
+            saveToLocal();
+            renderDots(container, newVal);
+            if (container.dataset.type === 'decay') {
+              const parentScale = container.closest('.scale');
+              const titleDiv = parentScale.querySelector('.scale-title');
+              if (titleDiv) titleDiv.textContent = card.typeCategory === 'logos' ? '⚠️ НАДЛОМ' : '🌀 УГАСАНИЕ';
+            }
+          });
+          container.appendChild(dot);
+        }
+      }
+      renderDots(attentionDots, card.attention || 0);
+      renderDots(decayDots, card.decay || 0);
+    });
+  }
+
+  function addNewCard() {
+    themesData.push({
+      id: generateId(),
+      title: 'Новая тема',
+      typeCategory: 'mythos',
+      mysteryIdentity: '',
+      attention: 0,
+      decay: 0,
+      powerKeys: [{ name: 'Новый ключ силы', note: '' }],
+      weaknessKeys: ['Новая слабость']
+    });
+    renderCards();
+    saveToLocal();
+  }
+
+  function resetToEmpty() {
+    if (confirm('Сбросить всё? Все карты будут удалены.')) {
+      themesData = [];
+      renderCards();
+      saveToLocal();
+    }
+  }
+
+  function exportToJSON() {
+    const dataStr = JSON.stringify(themesData, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `city_of_mist_dossier_${new Date().toISOString().slice(0,19)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function importFromJSON(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const imported = JSON.parse(e.target.result);
+        if (Array.isArray(imported)) {
+          themesData = imported;
+          renderCards();
+          saveToLocal();
+          alert('Досье успешно загружено!');
+        } else alert('Неверный формат файла.');
+      } catch (err) { alert('Ошибка: ' + err.message); }
+    };
+    reader.readAsText(file);
+  }
+
+  // Модалка заметок
+  function saveCurrentNote() {
+    if (!currentEditContext) return;
+    const { cardId, keyIndex } = currentEditContext;
+    const card = themesData.find(c => c.id === cardId);
+    if (card && card.powerKeys[keyIndex]) {
+      card.powerKeys[keyIndex].note = document.getElementById('modalNoteText').value;
+      saveToLocal();
+      renderCards();
+    }
+    closeModal();
+  }
+  function closeModal() {
+    document.getElementById('noteModal').style.display = 'none';
+    currentEditContext = null;
+  }
+
+  // Цветовая полоска
+  const strip = document.getElementById('colorStrip');
+  const colorMenu = document.getElementById('colorMenu');
+  strip.addEventListener('click', (e) => {
+    e.stopPropagation();
+    colorMenu.classList.toggle('hidden');
+  });
+  document.addEventListener('click', (e) => {
+    if (!strip.contains(e.target) && !colorMenu.contains(e.target)) {
+      colorMenu.classList.add('hidden');
+    }
+  });
+  function setNeonTheme(themeName) {
+    document.body.classList.remove('neon-pink', 'neon-cyan', 'neon-green');
+    document.body.classList.add(themeName);
+    localStorage.setItem('neonTheme', themeName);
+  }
+  function initNeon() {
+    const savedTheme = localStorage.getItem('neonTheme');
+    if (savedTheme && (savedTheme === 'neon-pink' || savedTheme === 'neon-cyan' || savedTheme === 'neon-green')) {
+      setNeonTheme(savedTheme);
+    } else setNeonTheme('neon-cyan');
+    document.querySelectorAll('#colorMenu button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const theme = btn.getAttribute('data-theme');
+        if (theme) setNeonTheme(theme);
+        colorMenu.classList.add('hidden');
+      });
+    });
+  }
+
+  // Старт
+  document.addEventListener('DOMContentLoaded', () => {
+    loadFromLocal();
+    renderCards();
+    initNeon();
+    document.getElementById('addNewCardBtn').addEventListener('click', addNewCard);
+    document.getElementById('resetAllBtn').addEventListener('click', resetToEmpty);
+    document.getElementById('exportBtn').addEventListener('click', exportToJSON);
+    document.getElementById('importFile').addEventListener('change', (e) => {
+      if (e.target.files.length) importFromJSON(e.target.files[0]);
+      e.target.value = '';
+    });
+    const modal = document.getElementById('noteModal');
+    document.getElementById('modalSaveBtn').addEventListener('click', saveCurrentNote);
+    document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  });
+</script>
+</body>
+</html>
